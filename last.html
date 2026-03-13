@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Export | AI Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f2ede3;
+  --ink: #140f05;
+  --accent: #d63b07;
+  --gold: #f0a500;
+  --card: #faf7f0;
+  --border: #c8bda0;
+  --muted: #7a6e58;
+  --green: #1a6e3c;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg);
+  background-image: radial-gradient(circle, rgba(20,15,5,0.055) 1px, transparent 1px);
+  background-size: 16px 16px;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px 16px 40px;
+}
+
+/* ── TOP RULE ── */
+.top-rule { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: var(--ink); z-index: 100; }
+
+/* ── BIG BACKGROUND WATERMARK ── */
+.bg-watermark {
+  position: fixed;
+  bottom: -40px; right: -20px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 220px;
+  color: rgba(214,59,7,0.04);
+  line-height: 1;
+  letter-spacing: -10px;
+  user-select: none;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page {
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  z-index: 1;
+  animation: riseUp 0.4s ease both;
+}
+
+@keyframes riseUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── HEADER ── */
+.page-eyebrow {
+  font-size: 9px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(36px, 10vw, 56px);
+  line-height: 0.92;
+  letter-spacing: -2.5px;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.page-title em { font-style: normal; color: var(--accent); position: relative; }
+.page-title em::after {
+  content: '';
+  position: absolute;
+  bottom: 2px; left: 0; right: 0;
+  height: 3px;
+  background: var(--gold);
+  border-radius: 2px;
+  transform: skewX(-6deg);
+}
+
+.project-label {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.project-label strong { color: var(--ink); font-weight: 600; }
+
+/* ── STATUS BADGE ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ink);
+  color: var(--bg);
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  padding: 5px 12px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #00e676;
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ── INSTRUCTION CARD ── */
+.inst-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  padding: 18px;
+  margin-bottom: 20px;
+  animation: riseUp 0.4s 0.08s ease both;
+}
+
+.inst-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.inst-list { list-style: none; }
+
+.inst-list li {
+  font-size: 10px;
+  color: var(--ink);
+  letter-spacing: 0.5px;
+  line-height: 1.7;
+  padding: 7px 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.inst-list li:first-child { border-top: none; padding-top: 0; }
+
+.inst-num {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--gold);
+  line-height: 1.4;
+  flex-shrink: 0;
+  width: 18px;
+}
+
+/* ── DOWNLOAD ROWS ── */
+.dl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  animation: riseUp 0.4s 0.14s ease both;
+}
+
+.dl-row {
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 4px 4px 0 var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform .15s, box-shadow .15s, background .15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.dl-row:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.dl-row:active {
+  transform: translate(0,0);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.dl-row.html-row { box-shadow: 4px 4px 0 var(--accent); }
+.dl-row.html-row:hover { box-shadow: 6px 6px 0 var(--accent); }
+
+.dl-row.json-row { box-shadow: 4px 4px 0 var(--gold); }
+.dl-row.json-row:hover { box-shadow: 6px 6px 0 var(--gold); }
+
+.dl-row-left { flex: 1; min-width: 0; }
+
+.dl-filename {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.3px;
+  margin-bottom: 3px;
+}
+
+.dl-desc {
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.dl-icon {
+  width: 36px; height: 36px;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+/* ── ERROR STATE ── */
+.error-row {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.error-row .dl-desc { color: var(--accent); }
+
+/* ── FOOTER ACTIONS ── */
+.footer-row {
+  display: flex;
+  gap: 8px;
+  animation: riseUp 0.4s 0.2s ease both;
+}
+
+.foot-btn {
+  flex: 1;
+  padding: 13px;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  background: var(--card);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color .15s, color .15s, background .15s;
+}
+
+.foot-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+.foot-btn.primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+  box-shadow: 3px 3px 0 var(--accent);
+}
+
+.foot-btn.primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+/* ── INFO STRIP ── */
+.info-strip {
+  margin-top: 28px;
+  border-top: 2px solid var(--border);
+  padding-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  animation: riseUp 0.4s 0.25s ease both;
+}
+
+.info-num {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.info-text {
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+
+/* ── TOAST ── */
+#toast-wrap {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none;
+}
+.t-msg {
+  background: var(--ink); color: var(--bg); border: 2px solid var(--ink);
+  border-radius: 2px; box-shadow: 2px 2px 0 var(--gold);
+  padding: 8px 16px; font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  font-family: 'IBM Plex Mono', monospace;
+  animation: tIn .2s ease both, tOut .2s ease 2.3s both; white-space: nowrap;
+}
+@keyframes tIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+@keyframes tOut { from{opacity:1} to{opacity:0} }
+</style>
+</head>
+<body>
+
+<div class="top-rule"></div>
+<div class="bg-watermark">EX</div>
+
+<div class="page">
+
+  <div class="page-eyebrow">— Build complete</div>
+  <div class="page-title">EXPORT<br><em>FILES</em></div>
+  <div class="project-label">Project: <strong id="proj-name">Loading...</strong></div>
+
+  <div class="status-badge">
+    <span class="status-dot"></span>
+    UI Build Successful
+  </div>
+
+  <div class="inst-card">
+    <div class="inst-title">— Deploy instructions</div>
+    <ol class="inst-list">
+      <li><span class="inst-num">01</span><span>Download <strong>ai.html</strong> — the chat interface styled exactly as you built it.</span></li>
+      <li><span class="inst-num">02</span><span>Download <strong>ai.json</strong> — the knowledge base that powers your AI responses.</span></li>
+      <li><span class="inst-num">03</span><span>Upload both files into the <strong>same folder</strong> on your web server or hosting platform.</span></li>
+    </ol>
+  </div>
+
+  <div class="dl-section">
+
+    <!-- ai.html download -->
+    <div class="dl-row html-row" id="html-row" onclick="downloadHTML()">
+      <div class="dl-row-left">
+        <div class="dl-filename">ai.html</div>
+        <div class="dl-desc" id="html-desc">Custom chat interface</div>
+      </div>
+      <div class="dl-icon">↓</div>
+    </div>
+
+    <!-- ai.json download -->
+    <div class="dl-row json-row" id="json-row" onclick="downloadJSON()">
+      <div class="dl-row-left">
+        <div class="dl-filename">ai.json</div>
+        <div class="dl-desc" id="json-desc">Knowledge base data</div>
+      </div>
+      <div class="dl-icon">↓</div>
+    </div>
+
+  </div>
+
+  <div class="footer-row">
+    <a href="builder.html" class="foot-btn">← Edit UI</a>
+    <a href="workspace.html" class="foot-btn primary">Workspace →</a>
+  </div>
+
+  <div class="info-strip">
+    <div>
+      <div class="info-num">01</div>
+      <div class="info-text">HTML saved in system memory</div>
+    </div>
+    <div>
+      <div class="info-num">02</div>
+      <div class="info-text">No upload required to download</div>
+    </div>
+    <div>
+      <div class="info-num">03</div>
+      <div class="info-text">Built by Black Strings</div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast-wrap"></div>
+
+<script>
+  // ── Load from localStorage ──
+  const projName    = localStorage.getItem('bhindi_project_name') || 'AI Project';
+  const htmlCode    = localStorage.getItem('bhindi_ai_html_code') || '';
+  const jsonData    = localStorage.getItem('bhindi_last_json')    || '';
+  const savedAt     = localStorage.getItem('bhindi_ui_saved_at');
+
+  document.getElementById('proj-name').textContent = projName;
+
+  // Check HTML availability
+  const htmlRow  = document.getElementById('html-row');
+  const htmlDesc = document.getElementById('html-desc');
+  if (!htmlCode) {
+    htmlRow.classList.add('error-row');
+    htmlDesc.textContent = 'Not found — go back to builder';
+  } else {
+    // Show file size
+    const kb = Math.round(htmlCode.length / 1024);
+    htmlDesc.textContent = `Custom chat interface · ~${kb}KB`;
+  }
+
+  // Check JSON availability
+  const jsonRow  = document.getElementById('json-row');
+  const jsonDesc = document.getElementById('json-desc');
+  if (!jsonData || jsonData === '[]' || jsonData === '') {
+    jsonRow.classList.add('error-row');
+    jsonDesc.textContent = 'No knowledge data found';
+  } else {
+    try {
+      const parsed = JSON.parse(jsonData);
+      const count = Array.isArray(parsed) ? parsed.length : Object.keys(parsed).length;
+      jsonDesc.textContent = `Knowledge base · ${count} entries`;
+    } catch(e) {
+      jsonDesc.textContent = 'Knowledge base data';
+    }
+  }
+
+  // ── Download HTML ──
+  function downloadHTML() {
+    if (!htmlCode) { toast('No HTML found — rebuild in builder'); return; }
+    const blob = new Blob([htmlCode], { type: 'text/html' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'ai.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('Downloaded ai.html');
+  }
+
+  // ── Download JSON ──
+  function downloadJSON() {
+    if (!jsonData || jsonData === '[]' || jsonData === '') { toast('No knowledge data found'); return; }
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'ai.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('Downloaded ai.json');
+  }
+
+  // ── Toast ──
+  function toast(msg) {
+    const w = document.getElementById('toast-wrap');
+    const el = document.createElement('div'); el.className = 't-msg'; el.textContent = msg;
+    w.appendChild(el); setTimeout(() => el.remove(), 2700);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f2ede3;
+    --ink: #140f05;
+    --accent: #d63b07;
+    --accent2: #f0a500;
+    --card: #faf7f0;
+    --border: #c8bda0;
+    --muted: #7a6e58;
+  }
+
+  html {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Halftone */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(20,15,5,0.05) 1px, transparent 1px);
+    background-size: 16px 16px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 32px 16px 28px;
+    border-bottom: 2px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .eyebrow {
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(44px, 14vw, 72px);
+    line-height: 0.9;
+    letter-spacing: -2px;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+
+  .hero-title .red {
+    color: var(--accent);
+    position: relative;
+    display: inline-block;
+  }
+
+  .hero-title .red::after {
+    content: '';
+    position: absolute;
+    bottom: 2px; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent2);
+    transform: skewX(-5deg);
+  }
+
+  .hero-desc {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    line-height: 1.8;
+    margin-bottom: 24px;
+    max-width: 320px;
+  }
+
+  .cta-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .btn-try {
+    background: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 2px;
+    padding: 13px 28px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--bg);
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--accent);
+    transition: background 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-try:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 4px 4px 0 var(--ink);
+    transform: translate(-1px,-1px);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 2px;
+    padding: 13px 20px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* BG watermark — clipped so it never overflows */
+  .hero-watermark {
+    position: absolute;
+    right: -10px;
+    bottom: -20px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(80px, 28vw, 140px);
+    color: rgba(214,59,7,0.04);
+    line-height: 1;
+    letter-spacing: -6px;
+    user-select: none;
+    pointer-events: none;
+    overflow: hidden;
+    max-width: 60%;
+  }
+
+  /* ── STATS STRIP ── */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-bottom: 2px solid var(--border);
+  }
+
+  .stat-cell {
+    padding: 14px 16px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .stat-cell:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(18px, 5vw, 26px);
+    color: var(--accent2);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+
+  /* ── TRY BANNER ── */
+  .try-banner {
+    margin: 20px 16px;
+    background: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 2px;
+    padding: 22px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .try-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 14px 14px;
+    pointer-events: none;
+  }
+
+  .banner-text { position: relative; z-index: 1; flex: 1; min-width: 0; }
+
+  .banner-label {
+    font-size: 8px;
+    letter-spacing: 4px;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  .banner-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(16px, 4vw, 20px);
+    color: var(--bg);
+    line-height: 1.1;
+    letter-spacing: -0.3px;
+  }
+
+  .btn-launch {
+    background: var(--accent);
+    border: 2px solid var(--accent);
+    border-radius: 2px;
+    padding: 11px 20px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    box-shadow: 3px 3px 0 rgba(240,165,0,0.4);
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+
+  .btn-launch:hover {
+    background: #b82e04;
+    transform: translate(-1px,-1px);
+    box-shadow: 4px 4px 0 var(--accent2);
+  }
+
+  /* ── BLOG SECTION ── */
+  .section-head {
+    padding: 20px 16px 14px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .section-count {
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* ── BLOG CARDS ── */
+  .blog-feed {
+    padding: 16px 16px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .blog-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 2px;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .blog-card:hover {
+    border-color: var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    transform: translate(-2px, -2px);
+  }
+
+  .blog-card.featured {
+    background: var(--ink);
+    border-color: var(--ink);
+    box-shadow: 5px 5px 0 var(--accent);
+  }
+
+  .blog-card.featured:hover {
+    box-shadow: 6px 6px 0 var(--accent);
+    transform: translate(-2px, -2px);
+  }
+
+  /* Number column — fixed width, vertically aligned */
+  .blog-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--border);
+    padding-top: 2px; /* optical alignment with text */
+    transition: color 0.18s;
+  }
+
+  .blog-card:hover:not(.featured) .blog-num { color: var(--accent2); }
+  .blog-card.featured .blog-num { color: rgba(242,237,227,0.12); }
+
+  /* Content column */
+  .blog-content {}
+
+  .blog-cat {
+    font-size: 8px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 5px;
+    line-height: 1;
+  }
+
+  .blog-card.featured .blog-cat { color: var(--accent2); }
+
+  .blog-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
+    color: var(--ink);
+    margin-bottom: 7px;
+  }
+
+  .blog-card.featured .blog-title { color: var(--bg); }
+
+  .blog-excerpt {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+    line-height: 1.7;
+    margin-bottom: 10px;
+  }
+
+  .blog-card.featured .blog-excerpt { color: rgba(242,237,227,0.5); }
+
+  .blog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .blog-meta {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .blog-card.featured .blog-meta { color: rgba(242,237,227,0.35); }
+
+  .blog-arrow {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--accent);
+    transition: transform 0.18s;
+    flex-shrink: 0;
+  }
+
+  .blog-card.featured .blog-arrow { color: var(--accent2); }
+  .blog-card:hover .blog-arrow { transform: translateX(3px); }
+
+  /* ── ANIMATE IN ── */
+  .hero { animation: up 0.35s ease both; }
+  .stats-strip { animation: up 0.35s 0.05s ease both; }
+  .try-banner { animation: up 0.35s 0.1s ease both; }
+  .blog-feed { animation: up 0.35s 0.15s ease both; }
+
+  @keyframes up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <section class="hero">
+    <span class="eyebrow">— AI Platform · Black Strings</span>
+    <h1 class="hero-title">BUILD<br>WITH<br><span class="red">AI.</span></h1>
+    <p class="hero-desc">Zero-cost AI widgets. Embed anywhere with Simple htmls only Free and unlimited — forever.</p>
+    <div class="cta-row">
+      <button class="btn-try" onclick="goToTry()">Try Now →</button>
+      <button class="btn-secondary" onclick="scrollToBlog()">Read Docs</button>
+    </div>
+    <div class="hero-watermark" aria-hidden="true">DR</div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-strip">
+    <div class="stat-cell">
+      <span class="stat-num">∞</span>
+      <span class="stat-label">Free usage</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-num">1Ln</span>
+      <span class="stat-label">To embed</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-num">₹0</span>
+      <span class="stat-label">Cost ever</span>
+    </div>
+  </div>
+
+  <!-- TRY BANNER -->
+  <div class="try-banner">
+    <div class="banner-text">
+      <div class="banner-label">— Live demo</div>
+      <div class="banner-title">Chat with<br>AI right now</div>
+    </div>
+    <button class="btn-launch" onclick="goToTry()">Launch →</button>
+  </div>
+
+  <!-- BLOG -->
+  <div id="blog-section">
+    <div class="section-head">
+      <span class="section-title">Latest Posts</span>
+      <span class="section-count">04 Articles</span>
+    </div>
+
+    <div class="blog-feed">
+
+      <div class="blog-card featured" onclick="openPost('what-is-embedai')">
+        <div class="blog-num">01</div>
+        <div class="blog-content">
+          <div class="blog-cat">Featured · Guide</div>
+          <div class="blog-title">What is DepthRoots and why it's free forever</div>
+          <div class="blog-excerpt">DepthRoots is a platform by Black String that lets developers build AI-powered applications .</div>
+          <div class="blog-footer">
+            <span class="blog-meta">Jun 2024 · 4 min</span>
+            <span class="blog-arrow">Read →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="blog-card" onclick="openPost('embed-in-5min')">
+        <div class="blog-num">02</div>
+        <div class="blog-content">
+          <div class="blog-cat">Tutorial</div>
+          <div class="blog-title">Embed your AI widget in 5 minutes</div>
+          <div class="blog-excerpt">Create a project, download two files, upload to any server. No backend required.</div>
+          <div class="blog-footer">
+            <span class="blog-meta">Jun 2024 · 3 min</span>
+            <span class="blog-arrow">Read →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="blog-card" onclick="openPost('zero-cost-arch')">
+        <div class="blog-num">03</div>
+        <div class="blog-content">
+          <div class="blog-cat">Deep Dive</div>
+          <div class="blog-title">Zero-cost architecture explained</div>
+          <div class="blog-excerpt">Wikipedia API, Unsplash, and pure JS logic — how we replaced expensive AI APIs with free public infrastructure.</div>
+          <div class="blog-footer">
+            <span class="blog-meta">May 2024 · 6 min</span>
+            <span class="blog-arrow">Read →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="blog-card" onclick="openPost('india-builders')">
+        <div class="blog-num">04</div>
+        <div class="blog-content">
+          <div class="blog-cat">Story · Black Strings</div>
+          <div class="blog-title">Building for all start ups </div>
+          <div class="blog-excerpt">Why affordability drives every product decision at Black Strings — and what's coming next.</div>
+          <div class="blog-footer">
+            <span class="blog-meta">May 2024 · 5 min</span>
+            <span class="blog-arrow">Read →</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+<script>
+  const POSTS = {
+    'what-is-embedai': {
+      cat:'Featured · Guide', title:"What is depth rootsand why it's free forever", time:'Jun 2024 · 4 min read',
+      body:`
+      DepthRoots is a platform by Black String that lets developers build AI-powered applications using large knowledge datasets and client-side intelligence.
+Instead of relying on expensive AI APIs for every query, DepthRoots uses a different architecture. It combines large JSON knowledge bases with public data sources such as Wikipedia for knowledge and Unsplash for images. All the processing and response logic runs directly in the browser using JavaScript.
+Because the system works locally in the user's browser and relies on open data sources, it removes the biggest cost of traditional AI platforms — paid API requests. This allows DepthRoots to offer a free and unlimited model without subscriptions, rate limits, or hidden usage caps.
+The goal of DepthRoots is to make AI development accessible to everyone. Developers can build chat systems, knowledge assistants, search tools, and intelligent applications without worrying about infrastructure costs.
+For builders in India and other emerging markets, this approach removes the financial barrier that usually comes with AI development. Instead of paying per request, developers can deploy AI systems that scale to thousands or even millions of users while keeping the system simple and cost-efficient.
+DepthRoots focuses on openness, accessibility, and practical AI systems that anyone can run with basic web technologies..`
+    },
+    'embed-in-5min': {
+      cat:'Tutorial', title:'Embed your AI widget in 5 minutes', time:'Jun 2024 · 3 min read',
+      body:`Step 1 — Create a Project
+Click New Project in the top bar. Enter a name for your AI and choose the knowledge domain or topic you want the AI to understand.
+
+Step 2 — Build
+DepthRoots automatically generates two files:
+• ai.html — the chat interface users interact with
+• ai.json — the knowledge base that powers the AI responses
+
+Step 3 — Download
+Open Projects → Your Project, then download both generated files.
+
+Step 4 — Upload
+Upload ai.html and ai.json to the same folder on any web server or hosting platform.
+
+Step 5 — Deploy
+Copy the one-line embed tag and paste it into any webpage to activate the AI chat widget.`
+    },
+    'zero-cost-arch': {
+      cat:'Deep Dive', title:'Zero-cost architecture explained', time:'May 2024 · 6 min read',
+      body:`Traditional AI chatbots route every message through a paid API. As usage grows, the cost of these API calls increases rapidly.
+
+DepthRoots takes a different approach.
+
+Instead of sending every request to a remote AI model, knowledge is stored in structured JSON files that are bundled with the AI system. The AI reads, matches, and retrieves answers from this knowledge base directly using JavaScript.
+
+For dynamic or external information, DepthRoots can query free public APIs such as the Wikipedia REST API for text content or services like Unsplash and Pexels for images. The main processing logic runs entirely in the browser.
+
+This architecture removes the need for constant paid API calls.
+
+The result is an AI system where each conversation has effectively zero marginal cost, making it possible to scale to large numbers of users without increasing infrastructure expenses.`
+    },
+    'india-builders': {
+      cat:'Story · Black Strings', title:"Building for India's next 100M developers", time:'May 2024 · 5 min read',
+      body:`Black String is a non-profit sub-startup with one goal: to make powerful digital tools accessible to every builder in India, regardless of budget.
+We believe the next wave of great software will come from Tier 2 and Tier 3 cities — from developers who are talented and ambitious but often priced out of the tools that many others around the world take for granted.
+That is why every product we build is free. Not freemium. Not "free with limits." Truly free.
+DepthRoots is one of the core projects in a growing ecosystem
+Founded by Jithin. The goal is to provide developers with practical technology they can use to build real products without worrying about infrastructure costs or expensive software licenses.`
+    }
+  };
+
+  function goToTry() {
+    const frame = window.parent && window.parent.document.getElementById('contentFrame');
+    if (frame) { frame.style.opacity='0'; setTimeout(()=>{ frame.src='try.html'; frame.style.opacity='1'; },200); }
+    else window.location.href='try.html';
+  }
+
+  function scrollToBlog() {
+    document.getElementById('blog-section').scrollIntoView({ behavior:'smooth' });
+  }
+
+  function openPost(slug) {
+    const p = POSTS[slug]; if (!p) return;
+    const html = `<!DOCTYPE html><html><head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <style>
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+      html,body{width:100%;overflow-x:hidden}
+      body{font-family:'IBM Plex Mono',monospace;background:#f2ede3;color:#140f05;padding:24px 16px 60px;position:relative}
+      body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(20,15,5,.05) 1px,transparent 1px);background-size:16px 16px;pointer-events:none}
+      .back{font-family:'Syne',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#d63b07;cursor:pointer;border:none;background:none;padding:0;margin-bottom:24px;display:inline-block}
+      .cat{font-size:8px;letter-spacing:4px;color:#7a6e58;text-transform:uppercase;margin-bottom:8px}
+      h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(22px,6vw,32px);letter-spacing:-1px;line-height:1.05;margin-bottom:10px}
+      .meta{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:#7a6e58;padding-bottom:18px;margin-bottom:20px;border-bottom:2px solid #c8bda0}
+      .body-text{font-size:11px;line-height:2;color:#3d3220;white-space:pre-line}
+      .cta{background:#140f05;border:2px solid #140f05;border-radius:2px;padding:16px;margin-top:32px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;transition:background .15s}
+      .cta:hover{background:#d63b07;border-color:#d63b07}
+      .cta-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#f2ede3}
+      .cta-sub{font-size:8px;color:rgba(242,237,227,.45);letter-spacing:2px;text-transform:uppercase;margin-top:3px}
+      .cta-arr{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#f0a500;flex-shrink:0}
+    </style></head><body>
+    <button class="back" onclick="history.back()">← Back</button>
+    <div class="cat">${p.cat}</div>
+    <h1>${p.title}</h1>
+    <div class="meta">${p.time}</div>
+    <div class="body-text">${p.body}</div>
+   
+     
+    </div>
+    </body></html>`;
+    const frame = window.parent && window.parent.document.getElementById('contentFrame');
+    if (frame) { frame.style.opacity='0'; setTimeout(()=>{ frame.srcdoc=html; frame.style.opacity='1'; },200); }
+    else { document.open(); document.write(html); document.close(); }
+  }
+</script>
+</body>
+</html>

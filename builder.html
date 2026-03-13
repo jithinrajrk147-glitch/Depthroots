@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>UI Builder | DepthRoot</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f2ede3;
+  --ink: #140f05;
+  --accent: #d63b07;
+  --gold: #f0a500;
+  --card: #faf7f0;
+  --border: #c8bda0;
+  --muted: #7a6e58;
+  --pw: 285px; /* panel width */
+}
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg);
+  background-image: radial-gradient(circle, rgba(20,15,5,0.05) 1px, transparent 1px);
+  background-size: 16px 16px;
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+}
+
+/* ══ TOP BAR ══ */
+.topbar {
+  height: 46px;
+  flex-shrink: 0;
+  background: var(--ink);
+  border-bottom: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  gap: 8px;
+  position: relative;
+  z-index: 200;
+}
+
+.brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -0.3px;
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.brand em { font-style: normal; color: var(--gold); }
+.brand sub { font-family: 'IBM Plex Mono', monospace; font-weight: 400; font-size: 7px; letter-spacing: 3px; color: rgba(242,237,227,0.3); vertical-align: middle; margin-left: 4px; }
+
+.topbar-right { display: flex; align-items: center; gap: 6px; }
+
+.tab-row {
+  display: flex;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 2px;
+  padding: 2px;
+  gap: 2px;
+}
+.tab-btn {
+  padding: 4px 11px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(242,237,227,0.4);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.tab-btn.active { background: var(--bg); color: var(--ink); }
+
+/* Mobile settings button */
+.mob-cfg-btn {
+  display: none;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 2px;
+  padding: 5px 9px;
+  color: var(--bg);
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.btn-next {
+  background: var(--accent);
+  border: 2px solid var(--accent);
+  border-radius: 2px;
+  padding: 6px 14px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--gold);
+  transition: background .15s, transform .12s, box-shadow .12s;
+  white-space: nowrap;
+}
+.btn-next:hover { background: #b82e04; transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--gold); }
+
+/* ══ BODY ══ */
+.body-wrap { flex: 1; min-height: 0; display: flex; position: relative; }
+
+/* ══ PANEL ══ */
+.panel {
+  width: var(--pw);
+  flex-shrink: 0;
+  border-right: 2px solid var(--ink);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width .25s ease;
+  position: relative;
+  z-index: 10;
+}
+.panel.closed { width: 0; border-right: none; }
+
+.panel-scroll {
+  width: var(--pw);
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.panel-scroll::-webkit-scrollbar { width: 2px; }
+.panel-scroll::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* Edge collapse tab */
+.ptab {
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 40px;
+  background: var(--ink);
+  border: none;
+  border-radius: 0 2px 2px 0;
+  color: var(--bg);
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+/* ── Accordion ── */
+.acc { border-bottom: 1px solid var(--border); }
+
+.acc-head {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  background: var(--card);
+  transition: background .12s;
+  user-select: none;
+  -webkit-user-select: none;
+  gap: 8px;
+}
+.acc-head:hover { background: var(--bg); }
+.acc-head-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.acc-arrow {
+  font-size: 10px;
+  color: var(--muted);
+  transition: transform .2s;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.acc.open .acc-arrow { transform: rotate(90deg); }
+
+.acc-body {
+  display: none;
+  padding: 12px 14px 14px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+.acc.open .acc-body { display: block; }
+
+/* ── Controls ── */
+.ctrl { margin-bottom: 12px; }
+.ctrl:last-child { margin-bottom: 0; }
+
+.ctrl-lbl {
+  display: block;
+  font-size: 7px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.ctrl-input, .ctrl-select {
+  width: 100%;
+  padding: 7px 9px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s;
+}
+.ctrl-input:focus, .ctrl-select:focus { border-color: var(--ink); }
+
+/* Color row */
+.color-row { display: flex; align-items: center; gap: 7px; }
+
+.cswatch {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  box-shadow: 2px 2px 0 var(--ink);
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+/* The color input sits on top, full size, full opacity */
+.cswatch input[type="color"] {
+  position: absolute;
+  inset: -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: 1;
+  background: none;
+}
+
+.hex-in {
+  flex: 1;
+  padding: 6px 9px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s;
+  min-width: 0;
+}
+.hex-in:focus { border-color: var(--ink); }
+
+/* Slider */
+.srow { display: flex; align-items: center; gap: 8px; }
+.ctrl-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.ctrl-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  background: var(--ink);
+  border-radius: 2px;
+  cursor: pointer;
+  border: none;
+}
+.ctrl-slider::-moz-range-thumb {
+  width: 16px; height: 16px;
+  background: var(--ink);
+  border-radius: 2px;
+  cursor: pointer;
+  border: none;
+}
+.sval {
+  font-size: 9px;
+  color: var(--muted);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ══ TOGGLE SWITCH — fully visible ══ */
+.tog-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 10px;
+  min-height: 28px; /* ensure row has height */
+}
+.tog-lbl {
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1.3;
+  flex: 1;
+}
+
+/* The switch itself — explicit dimensions, no pseudo-element conflicts */
+.tog {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.tog input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.tog-track {
+  position: absolute;
+  inset: 0;
+  background: var(--border);
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  transition: background .2s;
+}
+.tog-thumb {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: var(--bg);
+  border-radius: 1px;
+  top: 2px;
+  left: 2px;
+  transition: transform .2s;
+  z-index: 1;
+}
+.tog.on .tog-track { background: var(--ink); }
+.tog.on .tog-thumb { transform: translateX(20px); }
+
+/* Layout options */
+.layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.lo {
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  padding: 8px 4px;
+  cursor: pointer;
+  text-align: center;
+  background: var(--card);
+  transition: border-color .15s, background .15s, color .15s;
+}
+.lo.sel { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.lo-icon { font-size: 15px; display: block; margin-bottom: 3px; }
+.lo-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 7px; letter-spacing: 2px; text-transform: uppercase; }
+
+/* Avatar grid */
+.av-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.av-opt {
+  aspect-ratio: 1;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: var(--card);
+  transition: border-color .15s, box-shadow .15s;
+  position: relative;
+  overflow: hidden;
+}
+.av-opt.sel { border-color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.av-opt img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+}
+
+/* Upload avatar button */
+.av-upload-btn {
+  width: 100%;
+  padding: 8px;
+  border: 2px dashed var(--border);
+  border-radius: 2px;
+  background: transparent;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .15s, color .15s;
+  margin-bottom: 12px;
+  position: relative;
+}
+.av-upload-btn:hover { border-color: var(--ink); color: var(--ink); }
+.av-upload-btn input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+/* Theme grid */
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+.theme-btn {
+  padding: 8px 4px;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  background: var(--card);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.theme-btn:hover { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+
+/* ══ PREVIEW ══ */
+.preview-wrap {
+  flex: 1;
+  min-width: 0;
+  background: #ddd8cc;
+  background-image:
+    linear-gradient(rgba(20,15,5,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20,15,5,0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 28px 14px 14px;
+  gap: 8px;
+}
+
+.preview-lbl {
+  position: absolute;
+  top: 8px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 7px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(20,15,5,0.25);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Phone shell */
+.phone {
+  width: 100%;
+  max-width: 272px;
+  flex: 1;
+  min-height: 0;
+  max-height: 500px;
+  border: 3px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: 5px 5px 0 var(--ink);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+/* Chat inside phone */
+.pv { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+
+.pv-hdr {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 11px;
+  overflow: hidden;
+}
+.pv-av {
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255,255,255,0.15);
+  position: relative;
+}
+.pv-av img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; border-radius: 50%; }
+.pv-hdr-txt { flex: 1; min-width: 0; }
+.pv-name { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pv-st { font-size: 9px; opacity: .65; display: flex; align-items: center; gap: 3px; margin-top: 1px; }
+.pv-sd { width: 5px; height: 5px; border-radius: 50%; background: #00e676; display: inline-block; flex-shrink: 0; }
+
+.pv-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+.pv-msgs::-webkit-scrollbar { width: 0; }
+
+.pv-bub { max-width: 78%; padding: 7px 10px; font-size: 12px; line-height: 1.4; word-break: break-word; }
+.pv-bub.ai { align-self: flex-start; }
+.pv-bub.usr { align-self: flex-end; }
+
+.pv-typing {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 11px;
+}
+.td { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: .5; animation: tdB 1.2s ease infinite; }
+.td:nth-child(2){animation-delay:.15s} .td:nth-child(3){animation-delay:.3s}
+@keyframes tdB { 0%,100%{transform:translateY(0);opacity:.4} 50%{transform:translateY(-4px);opacity:1} }
+
+.pv-inbar {
+  flex-shrink: 0;
+  display: flex;
+  gap: 6px;
+  padding: 7px 9px;
+  align-items: center;
+  border-top: 1px solid rgba(0,0,0,0.07);
+}
+.pv-field {
+  flex: 1;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 20px;
+  padding: 6px 10px;
+  font-size: 10px;
+  color: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.03);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  font-family: inherit;
+}
+.pv-send {
+  width: 28px; height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* ══ OVERLAY (mobile panel) ══ */
+.panel-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(20,15,5,0.5);
+  z-index: 90;
+}
+.panel-overlay.show { display: block; }
+
+/* ══ TOAST ══ */
+#tw {
+  position: fixed;
+  top: 52px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--ink);
+  color: var(--bg);
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  box-shadow: 2px 2px 0 var(--gold);
+  padding: 7px 14px;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: 'IBM Plex Mono', monospace;
+  animation: tIn .2s ease both, tOut .2s ease 2.3s both;
+  white-space: nowrap;
+}
+@keyframes tIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tOut{from{opacity:1}to{opacity:0}}
+
+/* ══ MOBILE ══ */
+@media (max-width: 580px) {
+  .mob-cfg-btn { display: block !important; }
+  .tab-row { display: none; }
+
+  .panel {
+    position: fixed;
+    left: 0;
+    top: 46px;
+    bottom: 0;
+    z-index: 100;
+    width: var(--pw) !important;
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+    border-right: 2px solid var(--ink);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+  }
+  .panel.mob-open { transform: translateX(0); }
+  .panel.closed { transform: translateX(-100%); width: var(--pw) !important; }
+  .ptab { display: none; }
+
+  .preview-wrap { padding: 24px 10px 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">◆ DEPTH<em>ROOT</em><sub></sub></div>
+  <div class="topbar-right">
+    <div class="tab-row">
+      <button class="tab-btn active" id="tab-edit" onclick="setMode('edit')">Edit</button>
+      <button class="tab-btn" id="tab-preview" onclick="setMode('preview')">Preview</button>
+    </div>
+    <button class="mob-cfg-btn" id="mob-btn" onclick="toggleMob()">⚙</button>
+    <button class="btn-next" onclick="saveAndNext()">Next →</button>
+  </div>
+</div>
+
+<!-- MOBILE OVERLAY -->
+<div class="panel-overlay" id="overlay" onclick="closeMob()"></div>
+
+<!-- BODY -->
+<div class="body-wrap">
+
+  <!-- PANEL -->
+  <div class="panel" id="panel">
+    <button class="ptab" id="ptab" onclick="togglePanel()">‹</button>
+    <div class="panel-scroll">
+
+      <!-- PERSONA -->
+      <div class="acc open">
+        <div class="acc-head" onclick="togAcc(this)">
+          <span class="acc-head-title">Persona</span><span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="ctrl"><span class="ctrl-lbl">Bot Name</span>
+            <input class="ctrl-input" id="c-name" value="SAYA AI" oninput="render()"/>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Tagline</span>
+            <input class="ctrl-input" id="c-tag" value="Always here to help" oninput="render()"/>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Greeting</span>
+            <input class="ctrl-input" id="c-greet" value="Hi! How can I help you today?" oninput="render()"/>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Typing text</span>
+            <input class="ctrl-input" id="c-typing" value="Typing..." oninput="render()"/>
+          </div>
+          <div class="ctrl">
+            <span class="ctrl-lbl">Avatar Emoji</span>
+            <div class="av-grid" id="av-grid">
+              <div class="av-opt sel" data-e="🤖" onclick="pickAv(this)">🤖</div>
+              <div class="av-opt" data-e="✨" onclick="pickAv(this)">✨</div>
+              <div class="av-opt" data-e="⚡" onclick="pickAv(this)">⚡</div>
+              <div class="av-opt" data-e="🧠" onclick="pickAv(this)">🧠</div>
+              <div class="av-opt" data-e="🔮" onclick="pickAv(this)">🔮</div>
+              <div class="av-opt" data-e="💡" onclick="pickAv(this)">💡</div>
+              <div class="av-opt" data-e="🤩" onclick="pickAv(this)">🤩</div>
+              <div class="av-opt" id="av-img-slot" data-e="" onclick="pickAv(this)" style="font-size:10px;color:var(--muted)">IMG</div>
+            </div>
+          </div>
+          <!-- User image upload -->
+          <div class="av-upload-btn">
+            ↑ Upload avatar image
+            <input type="file" accept="image/*" onchange="handleAvatarUpload(this)"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- HEADER -->
+      <div class="acc">
+        <div class="acc-head" onclick="togAcc(this)">
+          <span class="acc-head-title">Header</span><span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="ctrl"><span class="ctrl-lbl">Background</span>
+            <div class="color-row">
+              <label class="cswatch" id="sw-hbg" style="background:#075e54">
+                <input type="color" id="c-hbg" value="#075e54" oninput="onClr('c-hbg','sw-hbg','hx-hbg')"/>
+              </label>
+              <input class="hex-in" id="hx-hbg" value="#075e54" maxlength="7" oninput="onHex('hx-hbg','c-hbg','sw-hbg')"/>
+            </div>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Text Color</span>
+            <div class="color-row">
+              <label class="cswatch" id="sw-htxt" style="background:#ffffff">
+                <input type="color" id="c-htxt" value="#ffffff" oninput="onClr('c-htxt','sw-htxt','hx-htxt')"/>
+              </label>
+              <input class="hex-in" id="hx-htxt" value="#ffffff" maxlength="7" oninput="onHex('hx-htxt','c-htxt','sw-htxt')"/>
+            </div>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Height</span>
+            <div class="srow"><input type="range" class="ctrl-slider" id="c-hh" min="44" max="80" value="56" oninput="sv(this);render()"/><span class="sval">56px</span></div>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Bottom Curve</span>
+            <div class="srow"><input type="range" class="ctrl-slider" id="c-hcr" min="0" max="28" value="0" oninput="sv(this);render()"/><span class="sval">0px</span></div>
+          </div>
+          <!-- TOGGLE: Show Status -->
+          <div class="tog-row">
+            <span class="tog-lbl">Show status</span>
+            <label class="tog on" id="tog-st">
+              <input type="checkbox" checked onchange="this.closest('.tog').classList.toggle('on',this.checked);render()"/>
+              <div class="tog-track"></div>
+              <div class="tog-thumb"></div>
+            </label>
+          </div>
+          <!-- TOGGLE: Show Avatar -->
+          <div class="tog-row">
+            <span class="tog-lbl">Show avatar</span>
+            <label class="tog on" id="tog-av">
+              <input type="checkbox" checked onchange="this.closest('.tog').classList.toggle('on',this.checked);render()"/>
+              <div class="tog-track"></div>
+              <div class="tog-thumb"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT STYLE -->
+      <div class="acc">
+        <div class="acc-head" onclick="togAcc(this)">
+          <span class="acc-head-title">Chat Style</span><span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <span class="ctrl-lbl" style="margin-bottom:7px;display:block">Message style</span>
+          <div class="layout-grid">
+            <div class="lo sel" data-l="bubble" onclick="pickLo(this)"><span class="lo-icon">💬</span><span class="lo-name">Bubble</span></div>
+            <div class="lo" data-l="flat"   onclick="pickLo(this)"><span class="lo-icon">▬</span><span class="lo-name">Flat</span></div>
+            <div class="lo" data-l="card"   onclick="pickLo(this)"><span class="lo-icon">🃏</span><span class="lo-name">Card</span></div>
+            <div class="lo" data-l="minimal" onclick="pickLo(this)"><span class="lo-icon">—</span><span class="lo-name">Minimal</span></div>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Chat Background</span>
+            <div class="color-row">
+              <label class="cswatch" id="sw-cbg" style="background:#ece5dd">
+                <input type="color" id="c-cbg" value="#ece5dd" oninput="onClr('c-cbg','sw-cbg','hx-cbg')"/>
+              </label>
+              <input class="hex-in" id="hx-cbg" value="#ece5dd" maxlength="7" oninput="onHex('hx-cbg','c-cbg','sw-cbg')"/>
+            </div>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Font Size</span>
+            <div class="srow"><input type="range" class="ctrl-slider" id="c-fs" min="11" max="20" value="13" oninput="sv(this);render()"/><span class="sval">13px</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI BUBBLE -->
+      <div class="acc">
+        <div class="acc-head" onclick="togAcc(this)">
+          <span class="acc-head-title">AI Bubble</span><span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="ctrl"><span class="ctrl-lbl">Background</span>
+            <div class="color-row">
+              <label class="cswatch" id="sw-aibg" style="background:#ffffff">
+                <input type="color" id="c-aibg" value="#ffffff" oninput="onClr('c-aibg','sw-aibg','hx-aibg')"/>
+              </label>
+              <input class="hex-in" id="hx-aibg" value="#ffffff" maxlength="7" oninput="onHex('hx-aibg','c-aibg','sw-aibg')"/>
+            </div>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Text Color</span>
+            <div class="color-row">
+              <label class="cswatch" id="sw-aitxt" style="background:#222222">
+                <input type="color" id="c-aitxt" value="#222222" oninput="onClr('c-aitxt','sw-aitxt','hx-aitxt')"/>
+              </label>
+              <input class="hex-in" id="hx-aitxt" value="#222222" maxlength="7" oninput="onHex('hx-aitxt','c-aitxt','sw-aitxt')"/>
+            </div>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Corner Radius</span>
+            <div class="srow"><input type="range" class="ctrl-slider" id="c-aircr" min="0" max="22" value="12" oninput="sv(this);render()"/><span class="sval">12px</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER BUBBLE -->
+      <div class="acc">
+        <div class="acc-head" onclick="togAcc(this)">
+          <span class="acc-head-title">User Bubble</span><span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="ctrl"><span class="ctrl-lbl">Background</span>
+            <div class="color-row">
+              <label class="cswatch" id="sw-ubg" style="background:#dcf8c6">
+                <input type="color" id="c-ubg" value="#dcf8c6" oninput="onClr('c-ubg','sw-ubg','hx-ubg')"/>
+              </label>
+              <input class="hex-in" id="hx-ubg" value="#dcf8c6" maxlength="7" oninput="onHex('hx-ubg','c-ubg','sw-ubg')"/>
+            </div>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Text Color</span>
+            <div class="color-row">
+              <label class="cswatch" id="sw-utxt" style="background:#111111">
+                <input type="color" id="c-utxt" value="#111111" oninput="onClr('c-utxt','sw-utxt','hx-utxt')"/>
+              </label>
+              <input class="hex-in" id="hx-utxt" value="#111111" maxlength="7" oninput="onHex('hx-utxt','c-utxt','sw-utxt')"/>
+            </div>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Corner Radius</span>
+            <div class="srow"><input type="range" class="ctrl-slider" id="c-urcr" min="0" max="22" value="12" oninput="sv(this);render()"/><span class="sval">12px</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INPUT BAR -->
+      <div class="acc">
+        <div class="acc-head" onclick="togAcc(this)">
+          <span class="acc-head-title">Input Bar</span><span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="ctrl"><span class="ctrl-lbl">Bar Background</span>
+            <div class="color-row">
+              <label class="cswatch" id="sw-inbg" style="background:#f0f0f0">
+                <input type="color" id="c-inbg" value="#f0f0f0" oninput="onClr('c-inbg','sw-inbg','hx-inbg')"/>
+              </label>
+              <input class="hex-in" id="hx-inbg" value="#f0f0f0" maxlength="7" oninput="onHex('hx-inbg','c-inbg','sw-inbg')"/>
+            </div>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Send Button</span>
+            <div class="color-row">
+              <label class="cswatch" id="sw-sbtn" style="background:#075e54">
+                <input type="color" id="c-sbtn" value="#075e54" oninput="onClr('c-sbtn','sw-sbtn','hx-sbtn')"/>
+              </label>
+              <input class="hex-in" id="hx-sbtn" value="#075e54" maxlength="7" oninput="onHex('hx-sbtn','c-sbtn','sw-sbtn')"/>
+            </div>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Placeholder</span>
+            <input class="ctrl-input" id="c-ph" value="Type a message..." oninput="render()"/>
+          </div>
+          <div class="ctrl"><span class="ctrl-lbl">Button Shape</span>
+            <select class="ctrl-select" id="c-bs" onchange="render()">
+              <option value="2px">Square</option>
+              <option value="6px">Rounded</option>
+              <option value="50%">Circle</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- THEMES -->
+      <div class="acc">
+        <div class="acc-head" onclick="togAcc(this)">
+          <span class="acc-head-title">Quick Themes</span><span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="theme-grid">
+            <button class="theme-btn" onclick="applyTheme('whatsapp')">WhatsApp</button>
+            <button class="theme-btn" onclick="applyTheme('dark')">Dark</button>
+            <button class="theme-btn" onclick="applyTheme('minimal')">Minimal</button>
+            <button class="theme-btn" onclick="applyTheme('brutalist')">Brutalist</button>
+            <button class="theme-btn" onclick="applyTheme('pastel')">Pastel</button>
+            <button class="theme-btn" onclick="applyTheme('neon')">Neon</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /panel-scroll -->
+  </div><!-- /panel -->
+
+  <!-- PREVIEW -->
+  <div class="preview-wrap">
+    <div class="preview-lbl">~ LIVE CHANGE</div>
+    <div class="phone" id="phone"><!-- rendered by JS --></div>
+  </div>
+
+</div><!-- /body-wrap -->
+
+<div id="tw"></div>
+
+<script>
+// ══ STATE ══
+let S = {
+  name:'Nova AI', tag:'Always here to help',
+  greet:'Hi! How can I help you today?', typing:'Typing...',
+  avatar:'🤖', avatarImg: null, // avatarImg = base64 data URL
+  layout:'bubble',
+  hbg:'#075e54', htxt:'#ffffff', hh:56, hcr:0,
+  showSt:true, showAv:true,
+  cbg:'#ece5dd', fs:13,
+  aibg:'#ffffff', aitxt:'#222222', aircr:12,
+  ubg:'#dcf8c6', utxt:'#111111', urcr:12,
+  inbg:'#f0f0f0', sbtn:'#075e54', ph:'Type a message...', bs:'50%',
+};
+
+const DEMO = [
+  {r:'ai', t:'Hi! How can I help you today?'},
+  {r:'usr', t:'What can you do?'},
+  {r:'ai', t:'I can answer questions and help with tasks. Try sending a message!'},
+];
+
+// ══ RENDER ══
+function render() {
+  readS();
+  DEMO[0].t = S.greet;
+
+  let aiSt = `border-radius:${S.aircr}px;background:${S.aibg};color:${S.aitxt}`;
+  let uSt  = `border-radius:${S.urcr}px;background:${S.ubg};color:${S.utxt}`;
+  let tySt = `background:${S.aibg};border-radius:${S.aircr}px;color:${S.aitxt}`;
+
+  if (S.layout==='flat')    { aiSt=`background:${S.aibg};color:${S.aitxt};border-radius:0`; uSt=`background:${S.ubg};color:${S.utxt};border-radius:0`; tySt=`background:${S.aibg};color:${S.aitxt};border-radius:0`; }
+  if (S.layout==='card')    { aiSt+=`;border:1px solid rgba(0,0,0,0.08);box-shadow:0 2px 6px rgba(0,0,0,0.07)`; }
+  if (S.layout==='minimal') { aiSt=`color:${S.aitxt};background:transparent;padding:3px 0`; tySt=`color:${S.aitxt};background:transparent`; }
+
+  // Avatar HTML
+  const avHTML = S.avatarImg
+    ? `<div class="pv-av"><img src="${S.avatarImg}" alt="av"/></div>`
+    : `<div class="pv-av">${S.avatar}</div>`;
+
+  const msgsH = DEMO.map(m =>
+    `<div class="pv-bub ${m.r}" style="font-size:${S.fs}px;${m.r==='ai'?aiSt:uSt}">${m.t}</div>`
+  ).join('');
+
+  document.getElementById('phone').innerHTML = `
+    <div class="pv">
+      <div class="pv-hdr" style="height:${S.hh}px;background:${S.hbg};color:${S.htxt};border-bottom-left-radius:${S.hcr}px;border-bottom-right-radius:${S.hcr}px;box-shadow:0 2px 6px rgba(0,0,0,0.1)">
+        ${S.showAv ? avHTML : ''}
+        <div class="pv-hdr-txt">
+          <div class="pv-name">${S.name}</div>
+          ${S.showSt ? `<div class="pv-st"><span class="pv-sd"></span>${S.tag}</div>` : ''}
+        </div>
+      </div>
+      <div class="pv-msgs" style="background:${S.cbg}">
+        ${msgsH}
+        <div class="pv-typing" style="${tySt}"><span class="td"></span><span class="td"></span><span class="td"></span></div>
+      </div>
+      <div class="pv-inbar" style="background:${S.inbg}">
+        <div class="pv-field">${S.ph}</div>
+        <div class="pv-send" style="background:${S.sbtn};border-radius:${S.bs}">↑</div>
+      </div>
+    </div>`;
+}
+
+function readS() {
+  S.name   = gv('c-name'); S.tag  = gv('c-tag'); S.greet = gv('c-greet'); S.typing = gv('c-typing');
+  S.hbg    = gv('c-hbg');  S.htxt = gv('c-htxt'); S.hh   = +gv('c-hh');  S.hcr   = +gv('c-hcr');
+  S.showSt = document.getElementById('tog-st').classList.contains('on');
+  S.showAv = document.getElementById('tog-av').classList.contains('on');
+  S.cbg    = gv('c-cbg');  S.fs   = +gv('c-fs');
+  S.aibg   = gv('c-aibg'); S.aitxt= gv('c-aitxt'); S.aircr=+gv('c-aircr');
+  S.ubg    = gv('c-ubg');  S.utxt = gv('c-utxt');  S.urcr =+gv('c-urcr');
+  S.inbg   = gv('c-inbg'); S.sbtn = gv('c-sbtn');  S.ph   = gv('c-ph'); S.bs = gv('c-bs');
+}
+
+function gv(id) { return document.getElementById(id)?.value ?? ''; }
+
+// ══ COLOR HELPERS ══
+function onClr(cId, swId, hxId) {
+  const v = document.getElementById(cId).value;
+  document.getElementById(swId).style.background = v;
+  document.getElementById(hxId).value = v;
+  render();
+}
+function onHex(hxId, cId, swId) {
+  const v = document.getElementById(hxId).value;
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+    document.getElementById(cId).value = v;
+    document.getElementById(swId).style.background = v;
+    render();
+  }
+}
+
+// ══ SLIDER LABEL ══
+function sv(el) {
+  el.parentElement.querySelector('.sval').textContent = el.value + 'px';
+}
+
+// ══ ACCORDION ══
+function togAcc(h) { h.closest('.acc').classList.toggle('open'); }
+
+// ══ LAYOUT & AVATAR ══
+function pickLo(el) {
+  document.querySelectorAll('.lo').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  S.layout = el.dataset.l;
+  render();
+}
+
+function pickAv(el) {
+  document.querySelectorAll('.av-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  if (el.dataset.e) { S.avatar = el.dataset.e; S.avatarImg = null; }
+  render();
+}
+
+// ══ AVATAR IMAGE UPLOAD ══
+function handleAvatarUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 500 * 1024) { toast('Image too large — max 500KB'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    S.avatarImg = e.target.result;
+    // Put in the IMG slot
+    const slot = document.getElementById('av-img-slot');
+    slot.innerHTML = `<img src="${S.avatarImg}" alt="av" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:1px"/>`;
+    slot.dataset.e = '';
+    document.querySelectorAll('.av-opt').forEach(o=>o.classList.remove('sel'));
+    slot.classList.add('sel');
+    render();
+    toast('Avatar uploaded');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ══ THEMES ══
+const THEMES = {
+  whatsapp:{ hbg:'#075e54',htxt:'#fff',cbg:'#ece5dd',aibg:'#fff',aitxt:'#222',ubg:'#dcf8c6',utxt:'#111',sbtn:'#075e54',inbg:'#f0f0f0',aircr:10,urcr:10 },
+  dark:    { hbg:'#1a1a1a',htxt:'#fff',cbg:'#111',   aibg:'#2a2a2a',aitxt:'#eee',ubg:'#0a84ff',utxt:'#fff',sbtn:'#0a84ff',inbg:'#1a1a1a',aircr:16,urcr:16 },
+  minimal: { hbg:'#ffffff',htxt:'#000',cbg:'#f9f9f9',aibg:'#f0f0f0',aitxt:'#111',ubg:'#000',utxt:'#fff',sbtn:'#000',inbg:'#fff',aircr:4,urcr:4 },
+  brutalist:{ hbg:'#140f05',htxt:'#f2ede3',cbg:'#f2ede3',aibg:'#faf7f0',aitxt:'#140f05',ubg:'#d63b07',utxt:'#fff',sbtn:'#140f05',inbg:'#f2ede3',aircr:0,urcr:0 },
+  pastel:  { hbg:'#f8b4d9',htxt:'#4a1942',cbg:'#fff5fb',aibg:'#fff',aitxt:'#4a1942',ubg:'#c084fc',utxt:'#fff',sbtn:'#c084fc',inbg:'#fff5fb',aircr:20,urcr:20 },
+  neon:    { hbg:'#0d0d0d',htxt:'#00ff87',cbg:'#050505',aibg:'#111',aitxt:'#00ff87',ubg:'#ff003c',utxt:'#fff',sbtn:'#00ff87',inbg:'#0d0d0d',aircr:6,urcr:6 },
+};
+
+function applyTheme(n) {
+  const t = THEMES[n]; if (!t) return;
+  const map = { hbg:'c-hbg',htxt:'c-htxt',cbg:'c-cbg',aibg:'c-aibg',aitxt:'c-aitxt',ubg:'c-ubg',utxt:'c-utxt',sbtn:'c-sbtn',inbg:'c-inbg' };
+  for (const [k,id] of Object.entries(map)) {
+    if (!t[k]) continue;
+    document.getElementById(id).value = t[k];
+    document.getElementById(id.replace('c-','hx-')).value = t[k];
+    document.getElementById(id.replace('c-','sw-')).style.background = t[k];
+  }
+  if (t.aircr!=null){ const s=document.getElementById('c-aircr'); s.value=t.aircr; sv(s); }
+  if (t.urcr!=null) { const s=document.getElementById('c-urcr');  s.value=t.urcr;  sv(s); }
+  render(); toast('Theme: '+n);
+}
+
+// ══ PANEL COLLAPSE ══
+let pOpen = true;
+function togglePanel() {
+  pOpen = !pOpen;
+  document.getElementById('panel').classList.toggle('closed', !pOpen);
+  document.getElementById('ptab').textContent = pOpen ? '‹' : '›';
+}
+
+// ══ MOBILE ══
+function toggleMob() {
+  document.getElementById('panel').classList.toggle('mob-open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeMob() {
+  document.getElementById('panel').classList.remove('mob-open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ══ MODE ══
+function setMode(m) {
+  document.getElementById('tab-edit').classList.toggle('active', m==='edit');
+  document.getElementById('tab-preview').classList.toggle('active', m==='preview');
+  if (m==='preview') { document.getElementById('panel').classList.add('closed'); pOpen=false; document.getElementById('ptab').textContent='›'; }
+  else { document.getElementById('panel').classList.remove('closed'); pOpen=true; document.getElementById('ptab').textContent='‹'; }
+}
+
+// ══ GENERATE HTML ══
+function generateHTML() {
+  readS();
+
+  // Avatar in generated HTML — embed as base64 if image uploaded, else emoji
+  const avInner = S.avatarImg
+    ? `<img src="${S.avatarImg}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0" alt=""/>`
+    : S.avatar;
+
+  let aiSt = `border-radius:${S.aircr}px;background:${S.aibg};color:${S.aitxt}`;
+  let uSt  = `border-radius:${S.urcr}px;background:${S.ubg};color:${S.utxt}`;
+  if (S.layout==='flat')    { aiSt=`background:${S.aibg};color:${S.aitxt};border-radius:0`; uSt=`background:${S.ubg};color:${S.utxt};border-radius:0`; }
+  if (S.layout==='card')    { aiSt+=`;border:1px solid rgba(0,0,0,0.08);box-shadow:0 2px 6px rgba(0,0,0,0.07)`; }
+  if (S.layout==='minimal') { aiSt=`color:${S.aitxt};background:transparent;padding:4px 0`; }
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>${S.name}</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:${S.cbg}}
+#w{display:flex;flex-direction:column;height:100dvh}
+#hdr{flex-shrink:0;height:${S.hh}px;background:${S.hbg};color:${S.htxt};display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom-left-radius:${S.hcr}px;border-bottom-right-radius:${S.hcr}px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+#hdr-av{font-size:22px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;background:rgba(255,255,255,0.15);flex-shrink:0;position:relative;${S.showAv?'':'display:none'}}
+#hdr-name{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hdr-st{font-size:10px;opacity:.7;display:flex;align-items:center;gap:4px;margin-top:2px;${S.showSt?'':'display:none'}}
+.sd{width:5px;height:5px;border-radius:50%;background:#00e676;display:inline-block}
+#chat{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:${S.cbg}}
+#chat::-webkit-scrollbar{width:3px}#chat::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15)}
+.ai{align-self:flex-start;max-width:78%;padding:9px 13px;font-size:${S.fs}px;line-height:1.45;${aiSt}}
+.us{align-self:flex-end;max-width:78%;padding:9px 13px;font-size:${S.fs}px;line-height:1.45;${uSt}}
+.ty{align-self:flex-start;display:flex;gap:4px;padding:10px 14px;border-radius:${S.aircr}px;background:${S.aibg}}
+.td{width:6px;height:6px;border-radius:50%;background:${S.aitxt};opacity:.5;animation:tb 1.2s ease infinite}
+.td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
+@keyframes tb{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-5px);opacity:1}}
+#inbar{flex-shrink:0;display:flex;gap:8px;padding:10px 12px;align-items:center;background:${S.inbg};border-top:1px solid rgba(0,0,0,0.07)}
+#tx{flex:1;border:1px solid rgba(0,0,0,0.1);border-radius:20px;padding:9px 14px;font-size:14px;outline:none;background:rgba(0,0,0,0.03);font-family:inherit}
+#sb{width:38px;height:38px;background:${S.sbtn};border:none;border-radius:${S.bs};color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
+#sb:hover{opacity:.85}
+</style>
+</head>
+<body>
+<div id="w">
+  <div id="hdr">
+    <div id="hdr-av">${avInner}</div>
+    <div style="flex:1;min-width:0">
+      <div id="hdr-name">${S.name}</div>
+      <div id="hdr-st"><span class="sd"></span>${S.tag}</div>
+    </div>
+  </div>
+  <div id="chat"><div class="ai">${S.greet}</div></div>
+  <div id="inbar">
+    <input id="tx" type="text" placeholder="${S.ph}" autocomplete="off"/>
+    <button id="sb">↑</button>
+  </div>
+</div>
+<script src="ai.js"></\script>
+<script>
+
+const ch = document.getElementById('chat');
+const tx = document.getElementById('tx');
+const sb = document.getElementById('sb');
+
+/* start AI engine */
+initAI();
+
+/* add message */
+function addMsg(cls,text){
+  const d=document.createElement('div');
+  d.className=cls;
+  d.innerHTML=text;
+  ch.appendChild(d);
+  ch.scrollTop=ch.scrollHeight;
+}
+
+/* send message */
+async function send(){
+
+  const t = tx.value.trim();
+  if(!t) return;
+
+  addMsg('us',t);
+  tx.value='';
+
+  /* typing indicator */
+  const ty=document.createElement('div');
+  ty.className='ty';
+  ty.innerHTML='<div class="td"></div><div class="td"></div><div class="td"></div>';
+  ch.appendChild(ty);
+  ch.scrollTop=ch.scrollHeight;
+
+  /* wait so animation is visible */
+  await new Promise(r => setTimeout(r,800));
+
+  try{
+
+    const answer = await askAI(t);
+
+    ty.remove();
+    addMsg('ai',answer);
+
+  }catch(e){
+
+    ty.remove();
+    addMsg('ai',"AI error loading response.");
+
+  }
+
+}
+
+/* button */
+sb.onclick = send;
+
+/* enter key */
+tx.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    send();
+  }
+});
+
+</\script>
+</body>
+</html>`;
+}
+
+// ══ SAVE & NEXT → json.html ══
+function saveAndNext() {
+  readS();
+  if (!S.name.trim()) { toast('Enter a bot name first'); return; }
+  const html = generateHTML();
+  localStorage.setItem('bhindi_ai_html_code', html);
+  localStorage.setItem('bhindi_project_name', S.name);
+  toast('UI saved — going to knowledge builder...');
+  setTimeout(() => { window.location.href = 'json.html'; }, 700);
+}
+
+// ══ TOAST ══
+function toast(msg) {
+  const w = document.getElementById('tw');
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  w.appendChild(el);
+  setTimeout(() => el.remove(), 2700);
+}
+
+// ══ INIT ══
+render();
+</script>
+</body>
+</html>
