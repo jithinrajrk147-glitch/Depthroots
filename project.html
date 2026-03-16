@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>AI Platform | Create Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f2ede3;
+    --ink: #140f05;
+    --accent: #d63b07;
+    --accent2: #f0a500;
+    --card: #faf7f0;
+    --border: #c8bda0;
+    --muted: #7a6e58;
+  }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    background: var(--bg);
+    background-image: radial-gradient(circle, rgba(20,15,5,0.055) 1px, transparent 1px);
+    background-size: 16px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    overflow-x: hidden;
+  }
+
+  /* ── TOP RULE ── */
+  .top-rule {
+    height: 3px;
+    background: var(--ink);
+    flex-shrink: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    flex-shrink: 0;
+    height: 52px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .brand {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  .brand em { font-style: normal; color: var(--accent); }
+
+  .brand-dot {
+    width: 6px; height: 6px;
+    background: var(--accent2);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .header-step {
+    font-size: 8px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── MAIN ── */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px 40px;
+  }
+
+  /* ── FORM CARD ── */
+  .form-wrap {
+    width: 100%;
+    max-width: 440px;
+    animation: riseUp 0.4s ease both;
+  }
+
+  .page-eyebrow {
+    font-size: 9px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(32px, 9vw, 52px);
+    letter-spacing: -2px;
+    line-height: 0.93;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .page-title em {
+    font-style: normal;
+    color: var(--accent);
+    position: relative;
+    display: inline-block;
+  }
+
+  .page-title em::after {
+    content: '';
+    position: absolute;
+    bottom: 2px; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent2);
+    border-radius: 2px;
+    transform: skewX(-6deg);
+  }
+
+  .page-sub {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    line-height: 1.7;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 2px;
+    box-shadow: 5px 5px 0 var(--ink);
+    padding: 24px 20px;
+    margin-bottom: 16px;
+  }
+
+  /* ── STEP INDICATOR ── */
+  .steps-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 24px;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .step-item:not(:last-child)::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+
+  .step-item.active:not(:last-child)::after {
+    background: var(--ink);
+  }
+
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 2px;
+    border: 2px solid var(--border);
+    background: transparent;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 10px;
+    color: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .step-item.active .step-num {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .step-item.done .step-num {
+    border-color: var(--accent2);
+    background: var(--accent2);
+    color: var(--ink);
+  }
+
+  .step-label {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--border);
+    white-space: nowrap;
+  }
+
+  .step-item.active .step-label { color: var(--ink); }
+  .step-item.done .step-label { color: var(--muted); }
+
+  /* ── FORM FIELDS ── */
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 8px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .field-hint {
+    font-size: 8px;
+    color: var(--border);
+    letter-spacing: 1px;
+    margin-top: 5px;
+    text-transform: uppercase;
+  }
+
+  .ink-input {
+    width: 100%;
+    padding: 13px 14px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .ink-input::placeholder { color: var(--border); }
+
+  .ink-input:focus {
+    border-color: var(--ink);
+    background: #fff;
+  }
+
+  .ink-input.error {
+    border-color: var(--accent);
+    background: rgba(214,59,7,0.03);
+  }
+
+  /* ── SUBMIT BTN ── */
+  .submit-btn {
+    width: 100%;
+    padding: 15px 20px;
+    background: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 2px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+
+  .submit-btn::before {
+    content: '';
+    position: absolute;
+    left: -100%; top: 0;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+    transition: left 0.5s;
+  }
+
+  .submit-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 4px 4px 0 rgba(214,59,7,0.25);
+    transform: translate(-2px,-2px);
+  }
+
+  .submit-btn:hover::before { left: 160%; }
+  .submit-btn:active { transform: none; box-shadow: none; }
+
+  /* ── BACK LINK ── */
+  .back-row {
+    text-align: center;
+    margin-top: 14px;
+  }
+
+  .back-link {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: 'IBM Plex Mono', monospace;
+    transition: color 0.2s;
+  }
+
+  .back-link:hover { color: var(--accent); }
+
+  /* ── TOAST ── */
+  #toast-container {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    width: calc(100% - 32px);
+    max-width: 400px;
+    pointer-events: none;
+  }
+
+  .toast {
+    width: 100%;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 2px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    box-shadow: 4px 4px 0 var(--ink);
+    animation: toastIn 0.25s ease both;
+  }
+
+  .toast.error { border-color: var(--accent); box-shadow: 4px 4px 0 var(--accent); }
+  .toast.success { border-color: var(--ink); box-shadow: 4px 4px 0 var(--accent2); }
+
+  .toast-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .toast-bar {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 2px;
+    background: var(--accent2);
+    animation: toastBar 2.5s linear forwards;
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes toastBar {
+    from { width: 100%; }
+    to   { width: 0%; }
+  }
+
+  @keyframes riseUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── INFO ROW ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-top: 2px solid var(--border);
+    margin-top: 28px;
+    animation: riseUp 0.4s 0.15s ease both;
+  }
+
+  .info-cell {
+    padding: 14px 0;
+    border-right: 1px solid var(--border);
+  }
+
+  .info-cell:last-child { border-right: none; }
+
+  .info-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--accent2);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .info-text {
+    font-size: 8px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-transform: uppercase;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<div class="top-rule"></div>
+
+<header>
+  <a href="workspace.html" class="brand">
+    <span class="brand-dot"></span>
+    DEPTH<em>ROOT</em>
+  </a>
+  <span class="header-step"></span>
+</header>
+
+<main>
+  <div class="form-wrap">
+
+    <span class="page-eyebrow">— New project</span>
+    <h1 class="page-title">CREATE<br><em>PROJECT</em></h1>
+    <p class="page-sub"></p>
+
+    <div class="card">
+
+      <!-- Step indicator -->
+      <div class="steps-row">
+        <div class="step-item active">
+          <div class="step-num">01</div>
+          <span class="step-label">Define</span>
+        </div>
+        <div class="step-item">
+          <div class="step-num">02</div>
+          <span class="step-label">Build</span>
+        </div>
+        <div class="step-item">
+          <div class="step-num">03</div>
+          <span class="step-label">Deploy</span>
+        </div>
+      </div>
+
+      <!-- Fields -->
+      <div class="form-group">
+        <label class="field-label" for="projName">Project Name</label>
+        <input
+          type="text"
+          id="projName"
+          class="ink-input"
+          placeholder="e.g. My sa_y_"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <div class="field-hint">What should your AI be called?</div>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label" for="projUrl">App or Website URL</label>
+        <input
+          type="text"
+          id="projUrl"
+          class="ink-input"
+          placeholder="https://s**y*.com"
+          autocomplete="off"
+          spellcheck="false"
+          inputmode="url"
+        />
+        <div class="field-hint">Where will this AI live?</div>
+      </div>
+
+      <button class="submit-btn" onclick="validateForm()">
+        Next Step →
+      </button>
+
+    </div>
+
+    <div class="back-row">
+      <a href="workspace.html" class="back-link">← Back to workspace</a>
+    </div>
+
+
+  </div>
+</main>
+
+<script>
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icon = type === 'error' ? '✕' : '✓';
+    toast.innerHTML = `
+      <span class="toast-icon">${icon}</span>
+      <span>${message}</span>
+      <div class="toast-bar"></div>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-8px)';
+      toast.style.transition = 'opacity 0.2s, transform 0.2s';
+      setTimeout(() => toast.remove(), 200);
+    }, 2500);
+  }
+
+  function validateForm() {
+    const name = document.getElementById('projName');
+    const url  = document.getElementById('projUrl');
+    let ok = true;
+
+    [name, url].forEach(el => el.classList.remove('error'));
+
+    if (!name.value.trim()) {
+      name.classList.add('error');
+      ok = false;
+    }
+    if (!url.value.trim()) {
+      url.classList.add('error');
+      ok = false;
+    }
+
+    if (!ok) {
+      showToast('Fill in all fields to continue', 'error');
+      return;
+    }
+
+    localStorage.setItem('bhindi_project_name', name.value.trim());
+    localStorage.setItem('bhindi_project_url',  url.value.trim());
+
+    showToast('Project created!', 'success');
+    setTimeout(() => { window.location.href = 'builder.html'; }, 1000);
+  }
+
+  // Enter key support
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') validateForm();
+  });
+</script>
+</body>
+</html>
