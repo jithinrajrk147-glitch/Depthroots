@@ -400,7 +400,7 @@ body {
 
   <div class="footer-row">
     <a href="builder.html" class="foot-btn">← Edit UI</a>
-    <a href="index.html" class="foot-btn primary">Workspace →</a>
+    <a href="workspace.html" class="foot-btn primary">Workspace →</a>
   </div>
 
   <div class="info-strip">
@@ -424,26 +424,39 @@ body {
 
 <script>
   // ── Load from localStorage ──
-  const projName    = localStorage.getItem('bhindi_project_name') || 'AI Project';
-  const htmlCode    = localStorage.getItem('bhindi_ai_html_code') || '';
-  const jsonData    = localStorage.getItem('bhindi_last_json')    || '';
-  const savedAt     = localStorage.getItem('bhindi_ui_saved_at');
+  const projName = localStorage.getItem('bhindi_project_name') || 'AI Project';
+  const htmlCode = localStorage.getItem('bhindi_ai_html_code') || '';
+  const jsonData = localStorage.getItem('bhindi_last_json')    || '';
 
   document.getElementById('proj-name').textContent = projName;
 
-  // Check HTML availability
+  // ── Save html+json back into the active project object ──
+  (function syncToProject() {
+    try {
+      const activeId = localStorage.getItem('bhindi_active_project');
+      if (!activeId) return;
+      let projects = JSON.parse(localStorage.getItem('bhindi_projects') || '[]');
+      const idx = projects.findIndex(p => p.id === activeId);
+      if (idx === -1) return;
+      if (htmlCode) projects[idx].html = htmlCode;
+      if (jsonData && jsonData !== '[]') projects[idx].json = jsonData;
+      projects[idx].name = projName;
+      localStorage.setItem('bhindi_projects', JSON.stringify(projects));
+    } catch(e) {}
+  })();
+
+  // ── Check HTML availability ──
   const htmlRow  = document.getElementById('html-row');
   const htmlDesc = document.getElementById('html-desc');
   if (!htmlCode) {
     htmlRow.classList.add('error-row');
     htmlDesc.textContent = 'Not found — go back to builder';
   } else {
-    // Show file size
     const kb = Math.round(htmlCode.length / 1024);
     htmlDesc.textContent = `Custom chat interface · ~${kb}KB`;
   }
 
-  // Check JSON availability
+  // ── Check JSON availability ──
   const jsonRow  = document.getElementById('json-row');
   const jsonDesc = document.getElementById('json-desc');
   if (!jsonData || jsonData === '[]' || jsonData === '') {
@@ -465,12 +478,9 @@ body {
     const blob = new Blob([htmlCode], { type: 'text/html' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href     = url;
-    a.download = 'ai.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    a.href = url; a.download = 'ai.html';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
     toast('Downloaded ai.html');
   }
 
@@ -480,19 +490,17 @@ body {
     const blob = new Blob([jsonData], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href     = url;
-    a.download = 'ai.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    a.href = url; a.download = 'ai.json';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
     toast('Downloaded ai.json');
   }
 
   // ── Toast ──
   function toast(msg) {
-    const w = document.getElementById('toast-wrap');
-    const el = document.createElement('div'); el.className = 't-msg'; el.textContent = msg;
+    const w  = document.getElementById('toast-wrap');
+    const el = document.createElement('div');
+    el.className = 't-msg'; el.textContent = msg;
     w.appendChild(el); setTimeout(() => el.remove(), 2700);
   }
 </script>
