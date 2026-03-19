@@ -552,8 +552,31 @@
       return;
     }
 
-    localStorage.setItem('bhindi_project_name', name.value.trim());
-    localStorage.setItem('bhindi_project_url',  url.value.trim());
+    const projName = name.value.trim();
+    const projUrl  = url.value.trim();
+
+    // ── Save into multi-project array ──
+    let projects = [];
+    try { projects = JSON.parse(localStorage.getItem('bhindi_projects') || '[]'); } catch(e) {}
+
+    const newProject = {
+      id: 'proj_' + Date.now(),
+      name: projName,
+      url: projUrl,
+      html: '',
+      json: '',
+      createdAt: new Date().toISOString()
+    };
+
+    projects.push(newProject);
+    localStorage.setItem('bhindi_projects', JSON.stringify(projects));
+
+    // ── Set as active + flat keys for builder/json/last compatibility ──
+    localStorage.setItem('bhindi_active_project', newProject.id);
+    localStorage.setItem('bhindi_project_name', projName);
+    localStorage.setItem('bhindi_project_url', projUrl);
+    localStorage.setItem('bhindi_ai_html_code', '');
+    localStorage.setItem('bhindi_last_json', '');
 
     showToast('Project created!', 'success');
     setTimeout(() => { window.location.href = 'builder.html'; }, 1000);
