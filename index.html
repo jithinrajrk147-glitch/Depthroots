@@ -231,31 +231,37 @@
 
 <script>
   // ══════════════════════════════════════════════════════
-  //  MULTI-PROJECT STORAGE SYSTEM
+  //  MULTI-PROJECT STORAGE
   //  bhindi_projects = JSON array of project objects:
-  //  { id, name, url, html, json, createdAt }
-  //  bhindi_active_project = id of the project being edited
+  //  { id, name, url, html, json, extraFiles: [{slot, data}], createdAt }
+  //  bhindi_active_project = id of project being edited
   // ══════════════════════════════════════════════════════
 
+  const MAX_EXTRAS = 19; // app2 … app20
+
+  // ── Project helpers ──
   function getProjects() {
     try { return JSON.parse(localStorage.getItem('bhindi_projects') || '[]'); }
     catch(e) { return []; }
   }
-
   function saveProjects(arr) {
     localStorage.setItem('bhindi_projects', JSON.stringify(arr));
   }
-
   function getActiveId() {
     return localStorage.getItem('bhindi_active_project') || null;
   }
-
-  function getActiveProject() {
-    const id = getActiveId();
+  function getProjectById(id) {
     return getProjects().find(p => p.id === id) || null;
   }
+  function updateProject(id, patch) {
+    const projects = getProjects();
+    const idx = projects.findIndex(p => p.id === id);
+    if (idx === -1) return;
+    projects[idx] = Object.assign(projects[idx], patch);
+    saveProjects(projects);
+  }
 
-  /* Parse TXT → knowledge blocks */
+  // ── Parse TXT → knowledge blocks ──
   function parseTxt(text) {
     return text.split('\n').map(line => {
       line = line.trim();
@@ -266,6 +272,13 @@
       return (kws.length && ans) ? { keywords: kws, answer: ans } : null;
     }).filter(Boolean);
   }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Current project being viewed in detail ──
+  let _detailId = null;
 
   /* ══ NAV ══ */
   function switchTab(el, type) {
@@ -284,24 +297,26 @@
   /* ══ PROJECT LIST ══ */
   function renderProjectList(frame) {
     const projects = getProjects();
-
     let cards = '';
+
     if (projects.length === 0) {
       cards = `<div class="empty-state">No projects yet — tap <strong>+ New</strong> to create one</div>`;
     } else {
       projects.slice().reverse().forEach(p => {
         let blockCount = 0;
         try { blockCount = JSON.parse(p.json || '[]').length; } catch(e) {}
-        const date = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
-        const hasFiles = p.html && p.json;
+        const extras = p.extraFiles ? p.extraFiles.length : 0;
+        const totalFiles = (p.json ? 1 : 0) + extras;
+        const date = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '';
+        const ready = !!(p.html && p.json);
         cards += `
           <div class="proj-card" onclick="window.parent.showProjectDetail('${p.id}')">
             <div style="flex:1;min-width:0">
               <div class="p-title">${escHtml(p.name)}</div>
-              <div class="p-sub">${blockCount} knowledge blocks · ${date}</div>
+              <div class="p-sub">${blockCount} blocks · ${totalFiles} json file${totalFiles!==1?'s':''} · ${date}</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
-              <span class="badge" style="${hasFiles ? '' : 'background:#d63b07'}">${hasFiles ? 'READY' : 'DRAFT'}</span>
+              <span class="badge" style="${ready?'':'background:#d63b07'}">${ready?'READY':'DRAFT'}</span>
               <div class="dl-icon" style="background:#d63b07;width:28px;height:28px;font-size:12px" onclick="event.stopPropagation();window.parent.deleteProject('${p.id}')" title="Delete">✕</div>
             </div>
           </div>`;
@@ -315,18 +330,14 @@
     `);
   }
 
-  function escHtml(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
   /* ══ PROJECT DETAIL ══ */
   function showProjectDetail(id) {
+    _detailId = id;
     const frame = document.getElementById('contentFrame');
-    const projects = getProjects();
-    const proj = projects.find(p => p.id === id);
+    const proj = getProjectById(id);
     if (!proj) return;
 
-    // Set as active so builder/json/last pages know which project to use
+    // Sync flat keys so builder/json/last work
     localStorage.setItem('bhindi_active_project', proj.id);
     localStorage.setItem('bhindi_project_name', proj.name);
     localStorage.setItem('bhindi_project_url', proj.url || '');
@@ -336,9 +347,39 @@
     let baseBlocks = 0;
     try { baseBlocks = JSON.parse(proj.json || '[]').length; } catch(e) {}
 
-    const hasHtml = !!proj.html;
-    const hasJson = !!proj.json;
-    const date = proj.createdAt ? new Date(proj.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
+    const extraFiles = proj.extraFiles || [];
+    const canAddMore = extraFiles.length < MAX_EXTRAS;
+    const nextSlot   = extraFiles.length + 2; // app2, app3...
+
+    // Extra file rows
+    let extraRows = '';
+    extraFiles.forEach((ef, idx) => {
+      let blocks = 0;
+      try { blocks = JSON.parse(ef.data || '[]').length; } catch(e) {}
+      extraRows += `
+        <div class="dl-row">
+          <div style="flex:1;min-width:0">
+            <div class="dl-label">app${ef.slot}.json</div>
+            <div class="p-sub">${blocks} blocks · tap ↓ to download</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+            <div class="dl-icon" onclick="window.parent.dlExtra('${id}',${idx})" title="Download">↓</div>
+            <div class="dl-icon" style="background:#d63b07" onclick="window.parent.deleteExtra('${id}',${idx})" title="Remove">✕</div>
+          </div>
+        </div>`;
+    });
+
+    const uploadZone = canAddMore ? `
+      <div class="section-label" style="margin-top:20px">Add knowledge file · will save as app${nextSlot}.json</div>
+      <div class="upload-zone" onclick="document.getElementById('xfi_${id}').click()">
+        <div style="font-size:24px;margin-bottom:6px">+</div>
+        <div class="upload-lbl">Upload TXT → app${nextSlot}.json</div>
+        <div class="upload-sub">Max 19 extra files · ${MAX_EXTRAS - extraFiles.length} remaining</div>
+        <input type="file" id="xfi_${id}" accept=".txt" style="display:none" onchange="window.parent.handleExtraUpload(this,'${id}')"/>
+      </div>` :
+      `<div class="note-box" style="margin-top:20px">Maximum 19 extra files reached. Delete one to add more.</div>`;
+
+    const date = proj.createdAt ? new Date(proj.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '';
 
     frame.style.opacity = '0';
     setTimeout(() => {
@@ -347,39 +388,76 @@
         <div class="eyebrow">— Project · ${escHtml(date)}</div>
         <h2 class="big-head">${escHtml(proj.name)}</h2>
 
-        <div class="note-box">Upload all files to the same server folder. ai.html auto-loads ai.json automatically.</div>
+        <div class="note-box">Upload all files to the <strong>same server folder</strong>. ai.html auto-loads ai.json + app2.json … app20.json.</div>
 
         <div class="section-label">Core files</div>
 
-        <div class="dl-row" onclick="window.parent.dlProjectFile('${id}','html')" style="${hasHtml ? '' : 'opacity:0.45;pointer-events:none'}">
+        <div class="dl-row" onclick="window.parent.dlCore('${id}','html')" style="${proj.html?'':'opacity:.4;pointer-events:none'}">
           <div>
             <div class="dl-label">ai.html</div>
-            <div class="p-sub">${hasHtml ? 'Chat interface — tap to download' : 'Not built yet — go to builder'}</div>
+            <div class="p-sub">${proj.html ? 'Chat interface · tap to download' : 'Not built yet — go to builder'}</div>
           </div>
           <div class="dl-icon">↓</div>
         </div>
 
-        <div class="dl-row" onclick="window.parent.dlProjectFile('${id}','json')" style="${hasJson ? '' : 'opacity:0.45;pointer-events:none'}">
+        <div class="dl-row" onclick="window.parent.dlCore('${id}','json')" style="${proj.json?'':'opacity:.4;pointer-events:none'}">
           <div>
             <div class="dl-label">ai.json</div>
-            <div class="p-sub">${hasJson ? baseBlocks + ' blocks · tap to download' : 'No knowledge data yet'}</div>
+            <div class="p-sub">${proj.json ? baseBlocks + ' blocks · tap to download' : 'No knowledge data yet'}</div>
           </div>
           <div class="dl-icon">↓</div>
         </div>
+
+        ${extraFiles.length > 0 ? `<div class="section-label" style="margin-top:20px">Extra knowledge files (${extraFiles.length})</div>${extraRows}` : ''}
+
+        ${uploadZone}
 
         <div class="section-label" style="margin-top:20px">Actions</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button onclick="window.parent.editProject('${id}')" style="flex:1;padding:12px;background:#140f05;color:#f2ede3;border:2px solid #140f05;border-radius:2px;font-family:'Syne',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;min-width:120px">Edit UI →</button>
-          <button onclick="window.parent.deleteProject('${id}')" style="flex:1;padding:12px;background:transparent;color:#d63b07;border:2px solid #d63b07;border-radius:2px;font-family:'Syne',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;min-width:120px">Delete</button>
+          <button onclick="window.parent.editProject('${id}')" style="flex:1;padding:12px 8px;background:#140f05;color:#f2ede3;border:2px solid #140f05;border-radius:2px;font-family:'Syne',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;min-width:100px">Edit UI →</button>
+          <button onclick="window.parent.deleteProject('${id}')" style="flex:1;padding:12px 8px;background:transparent;color:#d63b07;border:2px solid #d63b07;border-radius:2px;font-family:'Syne',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;min-width:100px">Delete</button>
         </div>
       `);
       frame.style.opacity = '1';
     }, 220);
   }
 
-  /* ══ EDIT PROJECT — go to builder with this project loaded ══ */
+  /* ══ UPLOAD EXTRA TXT ══ */
+  function handleExtraUpload(input, projId) {
+    const file = input.files[0];
+    if (!file) return;
+    const proj = getProjectById(projId);
+    if (!proj) return;
+    const extraFiles = proj.extraFiles || [];
+    if (extraFiles.length >= MAX_EXTRAS) { alert('Maximum 19 extra files reached.'); return; }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      const parsed = parseTxt(e.target.result);
+      if (!parsed.length) { alert('No valid blocks found. Check the TXT format.\n\nFormat: keyword1, keyword2 : Your answer here'); return; }
+      const slot = extraFiles.length + 2; // app2, app3...
+      extraFiles.push({ slot, data: JSON.stringify(parsed) });
+      updateProject(projId, { extraFiles });
+      showProjectDetail(projId);
+    };
+    reader.readAsText(file);
+  }
+
+  /* ══ DELETE EXTRA FILE ══ */
+  function deleteExtra(projId, idx) {
+    if (!confirm('Remove this extra knowledge file from the project?')) return;
+    const proj = getProjectById(projId);
+    if (!proj) return;
+    const extraFiles = (proj.extraFiles || []).filter((_, i) => i !== idx);
+    // Re-number slots sequentially
+    extraFiles.forEach((ef, i) => { ef.slot = i + 2; });
+    updateProject(projId, { extraFiles });
+    showProjectDetail(projId);
+  }
+
+  /* ══ EDIT PROJECT ══ */
   function editProject(id) {
-    const proj = getProjects().find(p => p.id === id);
+    const proj = getProjectById(id);
     if (!proj) return;
     localStorage.setItem('bhindi_active_project', proj.id);
     localStorage.setItem('bhindi_project_name', proj.name);
@@ -392,12 +470,8 @@
   /* ══ DELETE PROJECT ══ */
   function deleteProject(id) {
     if (!confirm('Delete this project? This cannot be undone.')) return;
-    const projects = getProjects().filter(p => p.id !== id);
-    saveProjects(projects);
-    // Clear active if it was this one
-    if (getActiveId() === id) {
-      localStorage.removeItem('bhindi_active_project');
-    }
+    saveProjects(getProjects().filter(p => p.id !== id));
+    if (getActiveId() === id) localStorage.removeItem('bhindi_active_project');
     const frame = document.getElementById('contentFrame');
     renderProjectList(frame);
   }
@@ -411,14 +485,22 @@
     URL.revokeObjectURL(a.href);
   }
 
-  function dlProjectFile(id, type) {
-    const proj = getProjects().find(p => p.id === id);
+  function dlCore(id, type) {
+    const proj = getProjectById(id);
     if (!proj) return;
     if (type === 'html') dl(proj.html, 'ai.html', 'text/html');
     else dl(proj.json, 'ai.json', 'application/json');
   }
 
-  // Legacy — kept for compatibility
+  function dlExtra(id, idx) {
+    const proj = getProjectById(id);
+    if (!proj) return;
+    const ef = (proj.extraFiles || [])[idx];
+    if (!ef) return;
+    dl(ef.data, 'app' + ef.slot + '.json', 'application/json');
+  }
+
+  // Legacy flat-key downloads (used by last.html)
   function triggerDownload(type) {
     if (type === 'html') dl(localStorage.getItem('bhindi_ai_html_code'), 'ai.html', 'text/html');
     else dl(localStorage.getItem('bhindi_last_json'), 'ai.json', 'application/json');
